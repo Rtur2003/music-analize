@@ -17,7 +17,7 @@ from sklearn.preprocessing import LabelEncoder
 
 from comparator.stats import compare_real_vs_ai
 from models.trainer import load_model
-from reporting.plots import calibration_plot, divergence_barplot
+from reporting.plots import calibration_plot, confusion_heatmap, divergence_barplot
 from reporting.report_builder import build_report
 
 
@@ -67,12 +67,14 @@ def evaluate_models(
     # Plots
     div_plot = divergence_barplot(divergence_df, metric="js") if not divergence_df.empty else None
     calib_fig = calibration_plot(auth_scores, y_auth)
+    cm_fig = confusion_heatmap(cm, labels=le.classes_)
 
     # Save summary HTML
     figures = {}
     if div_plot:
         figures["divergence_js"] = div_plot
     figures["calibration"] = calib_fig
+    figures["confusion_matrix"] = cm_fig
 
     html_path = output_dir / "evaluation.html"
     build_report(
