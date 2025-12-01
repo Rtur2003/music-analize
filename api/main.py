@@ -57,7 +57,7 @@ async def analyze(file: UploadFile = File(...)) -> Dict[str, object]:
     audio = normalize_loudness(audio, target_lufs=settings.audio.normalize_lufs)
 
     try:
-        features, embedding, mel = extract_all(
+        features, embedding, mel, centroid_series = extract_all(
             audio,
             settings=settings,
             embed_model_name=settings.genre_model.embedding_model,
