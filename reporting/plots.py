@@ -44,6 +44,20 @@ def divergence_barplot(divergence_df: pd.DataFrame, metric: str = "js") -> px.ba
     return fig
 
 
+def confusion_heatmap(cm: np.ndarray, labels: Iterable[str], title: str = "Confusion Matrix") -> go.Figure:
+    fig = go.Figure(
+        data=go.Heatmap(
+            z=cm,
+            x=list(labels),
+            y=list(labels),
+            colorscale="Blues",
+            colorbar=dict(title="Count"),
+        )
+    )
+    fig.update_layout(title=title, xaxis_title="Predicted", yaxis_title="True")
+    return fig
+
+
 def calibration_plot(probs: Iterable[float], labels: Iterable[int]) -> px.line:
     df = pd.DataFrame({"prob": list(probs), "label": list(labels)})
     df["bin"] = pd.cut(df["prob"], bins=np.linspace(0, 1, 11), include_lowest=True)
