@@ -44,7 +44,7 @@ def build_feature_store(
             target_duration_sec=settings.audio.target_duration_sec,
         )
         audio = normalize_loudness(audio, target_lufs=settings.audio.normalize_lufs)
-        features, embedding, _ = extract_all(audio, settings=settings, embed_model_name=embed_model_name)
+        features, embedding, _, _ = extract_all(audio, settings=settings, embed_model_name=embed_model_name)
         row = {"path": str(path), "genre": genre, "is_ai": is_ai, **features}
         rows.append(row)
 
