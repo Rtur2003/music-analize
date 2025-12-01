@@ -13,7 +13,14 @@ from features.extractor import extract_all
 from ingestion.loader import load_and_prepare
 from ingestion.preprocessing import normalize_loudness
 from models.trainer import load_model
-from reporting.plots import mel_spectrogram_fig
+from reporting.plots import (
+    chroma_bar,
+    envelope_fig,
+    feature_bar,
+    mel_spectrogram_fig,
+    spectral_centroid_fig,
+    waveform_fig,
+)
 from reporting.report_builder import build_report
 
 settings = get_settings()
