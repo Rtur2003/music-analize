@@ -25,6 +25,7 @@ config/settings.yaml  # Ayarlar
 ## Hızlı Başlangıç
 - CLI analiz: `python -m cli.analyze path\to\audio.wav --model-dir models\artifacts --output-dir reports`
 - API: `uvicorn api.main:app --reload --port 8000` ardından `POST /analyze` ile dosya yükle.
+- API cevap şeması: `genre` listesi `{label, confidence}`, `authenticity_score`, `features` (özellik sözlüğü), `report_path`.
 
 ## Eğitim (özet)
 1. Veri yerleşimi: `data/raw/{genre}/{ai|real}/*.wav`.
@@ -36,9 +37,16 @@ config/settings.yaml  # Ayarlar
 ## Otomasyon Betikleri
 - Özellik deposu: `python data/build_features.py` (girdi `data/raw`, çıktı `data/processed/features.parquet`).
 - Eğitim: `python models/train.py` (girdi `data/processed/features.parquet`, çıktı `models/artifacts/*.joblib`).
+- Değerlendirme: `python models/evaluate.py` (metrikler + HTML raporu `reports/eval/`).
+- Robustluk: `python data/robustness.py` (augmentasyonlarla genre/auth skor stabilitesi, sonuç `reports/robustness.csv`).
 
 ## Test
 `pytest` ile temel birim testleri: `pytest -q tests`.
+
+## Önerilen Doğrulama
+- Değerlendirme: AUROC/accuracy + genre confusion matrix; kalibrasyon eğrisi `reports/eval/evaluation.html`.
+- Robustluk: pitch/time-stretch/noise altında genre ve authenticity skor sapmalarını inceleyin (`reports/robustness.csv`).
+- Veri dengesi: per-genre AI/real dağılımını kontrol edin; gerekirse oversample/augment.
 
 ## Konfig
 `config/settings.yaml` üzerinden örnekleme oranı, mel/MFCC parametreleri, model tercihleri ve rapor çıktıları yönetilir. `config.settings.get_settings()` ile yüklenir.

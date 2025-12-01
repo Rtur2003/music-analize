@@ -13,37 +13,91 @@ HTML_TEMPLATE = """
   <meta charset="utf-8" />
   <title>Audio Analysis Report</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 32px; }
-    h1, h2 { color: #222; }
-    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-    .card { padding: 12px 16px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; }
-    .section { margin-top: 24px; }
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --accent: #22d3ee;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --radius: 14px;
+      --shadow: 0 14px 40px rgba(0,0,0,0.25);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 32px;
+      font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 10% 20%, rgba(34,211,238,0.15), transparent 25%), radial-gradient(circle at 80% 0%, rgba(94,92,255,0.15), transparent 22%), var(--bg);
+      color: var(--text);
+    }
+    h1, h2, h3 { margin: 0 0 8px 0; color: var(--text); }
+    p { color: var(--muted); margin: 4px 0; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .hero {
+      background: linear-gradient(135deg, rgba(34,211,238,0.18), rgba(17,24,39,0.7));
+      border: 1px solid rgba(34,211,238,0.25);
+      padding: 20px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.05);
+      padding: 14px 16px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .label { color: var(--muted); font-size: 13px; }
+    .value { font-size: 20px; font-weight: 600; color: var(--text); }
+    .section { margin: 24px 0; }
+    .figure {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 12px;
+      border: 1px solid rgba(255,255,255,0.05);
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+    @media (max-width: 640px) {
+      body { padding: 16px; }
+    }
   </style>
 </head>
 <body>
-  <h1>Audio Analysis Report</h1>
-  <p><strong>Sample:</strong> {{ sample_name }}</p>
-  <p><strong>Predicted Genre:</strong> {{ top_genre }} (confidence {{ top_genre_conf|round(3) }})</p>
-  <p><strong>Authenticity Score (AI=1):</strong> {{ authenticity_score|round(3) }}</p>
+  <div class="container">
+    <div class="hero">
+      <h1>Audio Analysis Report</h1>
+      <p><strong>Sample:</strong> {{ sample_name }}</p>
+      <p><strong>Predicted Genre:</strong> {{ top_genre }} (confidence {{ top_genre_conf|round(3) }})</p>
+      <p><strong>Authenticity Score (AI=1):</strong> {{ authenticity_score|round(3) }}</p>
+    </div>
 
-  <div class="section">
-    <h2>Key Metrics</h2>
-    <div class="cards">
-      {% for key, value in metrics.items() %}
-      <div class="card">
-        <strong>{{ key }}</strong>
-        <div>{{ value }}</div>
+    <div class="section">
+      <h2>Key Metrics</h2>
+      <div class="grid">
+        {% for key, value in metrics.items() %}
+        <div class="card">
+          <div class="label">{{ key }}</div>
+          <div class="value">{{ value }}</div>
+        </div>
+        {% endfor %}
       </div>
+    </div>
+
+    <div class="section">
+      <h2>Figures</h2>
+      {% for name, fig_html in figures.items() %}
+        <div class="figure">
+          <h3>{{ name }}</h3>
+          {{ fig_html | safe }}
+        </div>
       {% endfor %}
     </div>
-  </div>
-
-  <div class="section">
-    <h2>Figures</h2>
-    {% for name, fig_html in figures.items() %}
-      <h3>{{ name }}</h3>
-      {{ fig_html | safe }}
-    {% endfor %}
   </div>
 </body>
 </html>

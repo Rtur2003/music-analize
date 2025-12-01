@@ -6,6 +6,8 @@ from typing import Dict, Optional
 
 import numpy as np
 from fastapi import FastAPI, File, HTTPException, UploadFile
+
+from .schemas import AnalysisResponse, GenreScore, HealthResponse
 from config.settings import get_settings
 from features.extractor import extract_all
 from ingestion.loader import load_and_prepare
@@ -24,12 +26,12 @@ genre_model = load_model(GENRE_MODEL_PATH) if GENRE_MODEL_PATH.exists() else Non
 auth_model = load_model(AUTH_MODEL_PATH) if AUTH_MODEL_PATH.exists() else None
 
 
-@app.get("/healthz")
+@app.get("/healthz", response_model=HealthResponse)
 async def health() -> Dict[str, str]:
     return {"status": "ok"}
 
 
-@app.post("/analyze")
+@app.post("/analyze", response_model=AnalysisResponse)
 async def analyze(file: UploadFile = File(...)) -> Dict[str, object]:
     if file.content_type and not file.content_type.startswith("audio"):
         raise HTTPException(status_code=400, detail="Unsupported file type")
@@ -92,10 +94,17 @@ async def analyze(file: UploadFile = File(...)) -> Dict[str, object]:
     except Exception:
         pass
 
+    genre_response = (
+        [GenreScore(label=label, confidence=score) for label, score in genre_result.items()]
+        if genre_result
+        else None
+    )
+
     return {
         "filename": file.filename,
-        "genre": genre_result,
+        "genre": genre_response,
         "authenticity_score": authenticity_score,
         "features": {k: float(v) for k, v in features.items()},
         "report_path": str(report_path),
+        "message": "Processed without embedding" if embedding is None else None,
     }
