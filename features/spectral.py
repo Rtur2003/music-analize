@@ -53,4 +53,11 @@ def harmonic_percussive_ratio(audio: AudioSample) -> Dict[str, float]:
 def chroma_features(audio: AudioSample, n_fft: int = 2048, hop_length: int = 512) -> Dict[str, float]:
     chroma = librosa.feature.chroma_cqt(y=audio.waveform, sr=audio.sample_rate)
     chroma_mean = chroma.mean(axis=1)
-    return {f"chroma_{i}": float(v) for i, v in enumerate(chroma_mean)}
+    chroma_std = chroma.std(axis=1)
+    feats = {f"chroma_mean_{i}": float(v) for i, v in enumerate(chroma_mean)}
+    feats.update({f"chroma_std_{i}": float(v) for i, v in enumerate(chroma_std)})
+    return feats
+
+
+def spectral_centroid_series(audio: AudioSample, n_fft: int = 2048, hop_length: int = 512) -> np.ndarray:
+    return librosa.feature.spectral_centroid(y=audio.waveform, sr=audio.sample_rate, n_fft=n_fft, hop_length=hop_length)
