@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import Iterable, Optional
+from typing import Dict, Iterable, Optional
 
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import librosa
 
 
 def mel_spectrogram_fig(mel_db: np.ndarray, title: str = "Mel-Spectrogram") -> go.Figure:

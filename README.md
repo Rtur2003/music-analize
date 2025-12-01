@@ -55,6 +55,13 @@ config/settings.yaml  # Ayarlar
 ## Raporlama
 `reporting.report_builder.build_report` metrik kartları ve Plotly görsellerini HTML olarak üretir; WeasyPrint varsa PDF de üretir. Çıktılar `reports/` altına yazılır.
 
+Tek parça raporunda yer alan görseller:
+- Mel-spectrogram (zaman-frekans)
+- Waveform ve energy envelope (RMS)
+- Spectral centroid zaman serisi
+- Chroma energy bar grafiği
+- Core feature bar (LUFS, RMS, flatness, H/P ratio, crest factor)
+
 ## Notlar
 - Embedding için torchaudio paketleri (wav2vec2/hubert/mert) gerekir; yoksa hata mesajı döner.
 - PDF için `weasyprint` sistem bağımlılıkları (cairo, pango) isteyebilir.
