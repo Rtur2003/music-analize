@@ -92,10 +92,12 @@ async def analyze(file: UploadFile = File(...)) -> Dict[str, object]:
 
     report_path = Path(settings.reporting.output_dir) / f"{temp_path.stem}.html"
     report_path.parent.mkdir(parents=True, exist_ok=True)
+    top_genre_label = next(iter(genre_result.keys())) if genre_result else "unknown"
+    top_genre_conf = genre_result[top_genre_label] if genre_result else 0.0
     build_report(
         sample_name=file.filename,
-        top_genre=(next(iter(genre_result)) if genre_result else "unknown"),
-        top_genre_conf=(next(iter(genre_result.values())) if genre_result else 0.0) if genre_result else 0.0,
+        top_genre=top_genre_label,
+        top_genre_conf=top_genre_conf,
         authenticity_score=authenticity_score or 0.0,
         metrics={k: round(v, 3) for k, v in basic.items()},
         figures={"mel_spectrogram": mel_fig},
