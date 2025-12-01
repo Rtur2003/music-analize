@@ -20,6 +20,45 @@ def mel_spectrogram_fig(mel_db: np.ndarray, title: str = "Mel-Spectrogram") -> g
     return fig
 
 
+def waveform_fig(y: np.ndarray, sr: int, title: str = "Waveform") -> go.Figure:
+    times = np.linspace(0, len(y) / sr, num=len(y))
+    fig = go.Figure(data=go.Scatter(x=times, y=y, mode="lines", line=dict(color="#22d3ee")))
+    fig.update_layout(title=title, xaxis_title="Time (s)", yaxis_title="Amplitude")
+    return fig
+
+
+def envelope_fig(y: np.ndarray, sr: int, frame_ms: int = 50, title: str = "Energy Envelope") -> go.Figure:
+    hop = int(sr * frame_ms / 1000)
+    frames = [np.sqrt(np.mean(np.square(y[i : i + hop]))) for i in range(0, len(y), hop)]
+    times = np.arange(len(frames)) * (hop / sr)
+    fig = go.Figure(data=go.Scatter(x=times, y=frames, mode="lines", line=dict(color="#38bdf8")))
+    fig.update_layout(title=title, xaxis_title="Time (s)", yaxis_title="RMS")
+    return fig
+
+
+def spectral_centroid_fig(centroid: np.ndarray, sr: int, hop_length: int, title: str = "Spectral Centroid") -> go.Figure:
+    times = librosa.times_like(centroid, sr=sr, hop_length=hop_length)
+    fig = go.Figure(data=go.Scatter(x=times, y=centroid.flatten(), mode="lines", line=dict(color="#a855f7")))
+    fig.update_layout(title=title, xaxis_title="Time (s)", yaxis_title="Hz")
+    return fig
+
+
+def chroma_bar(chroma_mean: np.ndarray, title: str = "Chroma Energy") -> go.Figure:
+    labels = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+    fig = go.Figure(data=go.Bar(x=labels, y=chroma_mean, marker_color="#fbbf24"))
+    fig.update_layout(title=title, xaxis_title="Pitch Class", yaxis_title="Mean Energy")
+    return fig
+
+
+def feature_bar(features: Dict[str, float], title: str = "Feature Summary") -> go.Figure:
+    items = list(features.items())
+    labels = [k for k, _ in items]
+    values = [v for _, v in items]
+    fig = go.Figure(data=go.Bar(x=labels, y=values, marker_color="#22d3ee"))
+    fig.update_layout(title=title, xaxis_tickangle=-45)
+    return fig
+
+
 def feature_histogram(
     df: pd.DataFrame,
     feature: str,
