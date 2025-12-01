@@ -106,7 +106,14 @@ async def analyze(file: UploadFile = File(...)) -> Dict[str, object]:
             for k, v in features.items()
             if not k.startswith("mfcc") and not k.startswith("embed_") and k != "embedding_error"
         },
-        figures={"mel_spectrogram": mel_fig},
+        figures={
+            "mel_spectrogram": mel_fig,
+            "waveform": wave_fig,
+            "energy_envelope": env_fig,
+            "spectral_centroid": cent_fig,
+            "chroma": chroma_fig,
+            "core_features": metric_bar,
+        },
         html_path=report_path,
         pdf=settings.reporting.include_pdf,
     )
