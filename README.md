@@ -39,12 +39,13 @@ config/settings.yaml  # Ayarlar
 - Eğitim: `python models/train.py` (girdi `data/processed/features.parquet`, çıktı `models/artifacts/*.joblib`).
 - Değerlendirme: `python models/evaluate.py` (metrikler + HTML raporu `reports/eval/`).
 - Robustluk: `python data/robustness.py` (augmentasyonlarla genre/auth skor stabilitesi, sonuç `reports/robustness.csv`).
+- Veri doğrulama: `python data/validate_dataset.py` (per-genre AI/real sayıları, eksik klasörleri tespit).
 
 ## Test
 `pytest` ile temel birim testleri: `pytest -q tests`.
 
 ## Önerilen Doğrulama
-- Değerlendirme: AUROC/accuracy + genre confusion matrix; kalibrasyon eğrisi `reports/eval/evaluation.html`.
+- Değerlendirme: AUROC/accuracy + genre confusion matrix (heatmap), kalibrasyon eğrisi `reports/eval/evaluation.html`.
 - Robustluk: pitch/time-stretch/noise altında genre ve authenticity skor sapmalarını inceleyin (`reports/robustness.csv`).
 - Veri dengesi: per-genre AI/real dağılımını kontrol edin; gerekirse oversample/augment.
 
