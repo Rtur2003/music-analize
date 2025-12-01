@@ -77,6 +77,20 @@ async def analyze(file: UploadFile = File(...)) -> Dict[str, object]:
         authenticity_score = float(auth_model.predict_proba(np.array([embedding]))[0])
 
     mel_fig = mel_spectrogram_fig(mel_db=mel, title="Mel-Spectrogram")
+    wave_fig = waveform_fig(audio.waveform, audio.sample_rate, title="Waveform")
+    env_fig = envelope_fig(audio.waveform, audio.sample_rate, title="Energy Envelope")
+    cent_fig = spectral_centroid_fig(
+        centroid_series,
+        sr=audio.sample_rate,
+        hop_length=settings.features.hop_length,
+        title="Spectral Centroid",
+    )
+    chroma_mean = np.array([v for k, v in features.items() if k.startswith("chroma_mean_")])
+    chroma_fig = chroma_bar(chroma_mean, title="Chroma Energy")
+    metric_bar = feature_bar(
+        {k: v for k, v in features.items() if k in ("lufs", "rms", "flatness", "harmonic_percussive_ratio", "crest_factor")},
+        title="Core Features",
+    )
 
     report_path = Path(settings.reporting.output_dir) / f"{temp_path.stem}.html"
     report_path.parent.mkdir(parents=True, exist_ok=True)
