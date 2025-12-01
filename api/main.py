@@ -6,12 +6,8 @@ from typing import Dict, Optional
 
 import numpy as np
 from fastapi import FastAPI, File, HTTPException, UploadFile
-
-from comparator.stats import compare_real_vs_ai
 from config.settings import get_settings
-from features.base_features import extract_basic_features
-from features.embeddings import extract_embedding
-from features.spectral import compute_mfcc_stats, compute_mel_spectrogram, harmonic_percussive_ratio
+from features.extractor import extract_all
 from ingestion.loader import load_and_prepare
 from ingestion.preprocessing import normalize_loudness
 from models.trainer import load_model
@@ -51,23 +47,14 @@ async def analyze(file: UploadFile = File(...)) -> Dict[str, object]:
     )
     audio = normalize_loudness(audio, target_lufs=settings.audio.normalize_lufs)
 
-    basic = extract_basic_features(audio)
-    mfcc = compute_mfcc_stats(
-        audio,
-        n_mfcc=settings.features.n_mfcc,
-        n_fft=settings.features.n_fft,
-        hop_length=settings.features.hop_length,
-    )
-    hpr = harmonic_percussive_ratio(audio)
-    features = {**basic, **mfcc, **hpr}
-
     try:
-        embedding = extract_embedding(audio, model_name=settings.genre_model.embedding_model)
-        features.update({f"embed_{i}": float(v) for i, v in enumerate(embedding)})
+        features, embedding, mel = extract_all(
+            audio,
+            settings=settings,
+            embed_model_name=settings.genre_model.embedding_model,
+        )
     except Exception as exc:
-        # Keep service responsive even if heavy models are absent
-        embedding = None
-        features["embedding_error"] = str(exc)
+        raise HTTPException(status_code=500, detail=f"Feature extraction failed: {exc}")
 
     genre_result: Optional[Dict[str, float]] = None
     if genre_model:
@@ -80,14 +67,6 @@ async def analyze(file: UploadFile = File(...)) -> Dict[str, object]:
     if auth_model and embedding is not None:
         authenticity_score = float(auth_model.predict_proba(np.array([embedding]))[0])
 
-    mel = compute_mel_spectrogram(
-        audio,
-        n_fft=settings.features.n_fft,
-        hop_length=settings.features.hop_length,
-        n_mels=settings.features.n_mels,
-        fmin=settings.features.fmin,
-        fmax=settings.features.fmax,
-    )
     mel_fig = mel_spectrogram_fig(mel_db=mel, title="Mel-Spectrogram")
 
     report_path = Path(settings.reporting.output_dir) / f"{temp_path.stem}.html"
@@ -99,16 +78,24 @@ async def analyze(file: UploadFile = File(...)) -> Dict[str, object]:
         top_genre=top_genre_label,
         top_genre_conf=top_genre_conf,
         authenticity_score=authenticity_score or 0.0,
-        metrics={k: round(v, 3) for k, v in basic.items()},
+        metrics={
+            k: round(v, 3)
+            for k, v in features.items()
+            if not k.startswith("mfcc") and not k.startswith("embed_") and k != "embedding_error"
+        },
         figures={"mel_spectrogram": mel_fig},
         html_path=report_path,
         pdf=settings.reporting.include_pdf,
     )
+    try:
+        temp_path.unlink(missing_ok=True)
+    except Exception:
+        pass
 
     return {
         "filename": file.filename,
         "genre": genre_result,
         "authenticity_score": authenticity_score,
-        "features": {k: float(v) for k, v in basic.items()},
+        "features": {k: float(v) for k, v in features.items()},
         "report_path": str(report_path),
     }

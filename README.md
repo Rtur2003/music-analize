@@ -1,1 +1,45 @@
-"# music-analize" 
+# Ses-Analizi: Genre + AI Detection
+
+Modüler bir ses analizi sistemi: tür (genre) tespiti, orijinal vs. AI karşılaştırması, ve HTML/PDF raporlama. FastAPI + CLI ile çalışır; özellik çıkarımı librosa/torchaudio tabanlıdır, modeller sklearn/LightGBM ile eğitilir.
+
+## Kurulum
+```
+python -m venv .venv
+.venv\Scripts\activate  # Windows
+pip install -r requirements.txt
+```
+Gerekli araçlar: ffmpeg (ses dönüştürme), optional GPU için PyTorch CUDA dağıtımı.
+
+## Dizim
+```
+ingestion/        # Yükleme + ön işleme
+features/         # Özellik çıkarımı ve embeddingler
+models/           # Genre + authenticity modelleri
+comparator/       # İstatistiksel karşılaştırmalar
+reporting/        # Plotly figürleri + HTML/PDF rapor
+api/              # FastAPI servis girişi
+cli/              # Komut satırı aracı
+config/settings.yaml  # Ayarlar
+```
+
+## Hızlı Başlangıç
+- CLI analiz: `python -m cli.analyze path\to\audio.wav --model-dir models\artifacts --output-dir reports`
+- API: `uvicorn api.main:app --reload --port 8000` ardından `POST /analyze` ile dosya yükle.
+
+## Eğitim (özet)
+1. Veri yerleşimi: `data/raw/{genre}/{ai|real}/*.wav`.
+2. Özellik çıkarımı: `features.extractor.extract_all` kullanarak DataFrame oluşturun (parquet/duckdb önerilir).
+3. Tür modeli: `models.trainer.train_genre_classifier(X, y_genre)`.
+4. Authenticity modeli: `models.trainer.train_authenticity_classifier(X, y_is_ai)`.
+5. Modelleri kaydet: `models/trainer.save_model(..., models/artifacts/genre_classifier.joblib)` ve `auth_classifier.joblib`.
+
+## Konfig
+`config/settings.yaml` üzerinden örnekleme oranı, mel/MFCC parametreleri, model tercihleri ve rapor çıktıları yönetilir. `config.settings.get_settings()` ile yüklenir.
+
+## Raporlama
+`reporting.report_builder.build_report` metrik kartları ve Plotly görsellerini HTML olarak üretir; WeasyPrint varsa PDF de üretir. Çıktılar `reports/` altına yazılır.
+
+## Notlar
+- Embedding için torchaudio paketleri (wav2vec2/hubert/mert) gerekir; yoksa hata mesajı döner.
+- PDF için `weasyprint` sistem bağımlılıkları (cairo, pango) isteyebilir.
+- Kod, prod öncesi kalibrasyon/robustluk testleri (pitch/time-stretch, mp3 sıkıştırma) yapılacak şekilde modüler tutuldu.

@@ -14,7 +14,7 @@ features:
 
 models:
   genre:
-    embedding_model: musicnn
+    embedding_model: wav2vec2_base
     top_k: 5
   authenticity:
     base_model: lightgbm

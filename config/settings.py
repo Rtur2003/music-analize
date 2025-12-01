@@ -27,7 +27,7 @@ class FeatureConfig:
 
 @dataclass
 class GenreModelConfig:
-    embedding_model: str = "musicnn"
+    embedding_model: str = "wav2vec2_base"
     top_k: int = 5
 
 
