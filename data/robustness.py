@@ -44,10 +44,10 @@ def robustness_eval(
         )
         audio = normalize_loudness(audio, target_lufs=settings.audio.normalize_lufs)
 
-        original_feats, embed, _ = extract_all(audio, settings=settings, embed_model_name=settings.genre_model.embedding_model)
+        original_feats, embed, _, _ = extract_all(audio, settings=settings, embed_model_name=settings.genre_model.embedding_model)
         for name, sig in {"original": audio.waveform, **apply_augmentations(audio.waveform, audio.sample_rate)}.items():
             aug_audio = audio.__class__(waveform=sig, sample_rate=audio.sample_rate)
-            feats, embed_aug, _ = extract_all(aug_audio, settings=settings, embed_model_name=settings.genre_model.embedding_model)
+            feats, embed_aug, _, _ = extract_all(aug_audio, settings=settings, embed_model_name=settings.genre_model.embedding_model)
             emb = embed_aug if embed_aug is not None else embed
             if emb is None:
                 continue
