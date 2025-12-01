@@ -1,0 +1,31 @@
+audio:
+  sample_rate: 44100
+  mono: true
+  target_duration_sec: 30
+  normalize_lufs: -23.0
+
+features:
+  n_fft: 2048
+  hop_length: 512
+  n_mels: 128
+  n_mfcc: 20
+  fmin: 20
+  fmax: 20000
+
+models:
+  genre:
+    embedding_model: musicnn
+    top_k: 5
+  authenticity:
+    base_model: lightgbm
+    threshold: 0.5
+
+reporting:
+  output_dir: reports
+  include_pdf: true
+  include_html: true
+
+storage:
+  feature_store: data/processed/features.parquet
+  raw_dir: data/raw
+  processed_dir: data/processed
