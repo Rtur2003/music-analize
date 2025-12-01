@@ -33,6 +33,13 @@ config/settings.yaml  # Ayarlar
 4. Authenticity modeli: `models.trainer.train_authenticity_classifier(X, y_is_ai)`.
 5. Modelleri kaydet: `models/trainer.save_model(..., models/artifacts/genre_classifier.joblib)` ve `auth_classifier.joblib`.
 
+## Otomasyon Betikleri
+- Özellik deposu: `python data/build_features.py` (girdi `data/raw`, çıktı `data/processed/features.parquet`).
+- Eğitim: `python models/train.py` (girdi `data/processed/features.parquet`, çıktı `models/artifacts/*.joblib`).
+
+## Test
+`pytest` ile temel birim testleri: `pytest -q tests`.
+
 ## Konfig
 `config/settings.yaml` üzerinden örnekleme oranı, mel/MFCC parametreleri, model tercihleri ve rapor çıktıları yönetilir. `config.settings.get_settings()` ile yüklenir.
 
