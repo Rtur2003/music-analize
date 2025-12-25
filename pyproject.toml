@@ -1,0 +1,86 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "music-analize"
+version = "0.1.0"
+description = "Modular audio analysis system for genre detection and AI authenticity verification"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Music Analize Team"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "torch",
+    "torchaudio",
+    "librosa",
+    "pyloudnorm",
+    "numpy",
+    "scipy",
+    "pandas",
+    "lightgbm",
+    "scikit-learn",
+    "fastapi",
+    "uvicorn[standard]",
+    "python-multipart",
+    "plotly",
+    "altair",
+    "jinja2",
+    "weasyprint",
+    "pyyaml",
+    "duckdb",
+    "pyarrow",
+    "soundfile",
+    "typer",
+    "tqdm",
+    "rich",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov",
+    "black",
+    "ruff",
+    "mypy",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["api*", "cli*", "comparator*", "config*", "data*", "features*", "ingestion*", "models*", "reporting*"]
+exclude = ["tests*"]
+
+[tool.black]
+line-length = 120
+target-version = ['py39', 'py310', 'py311', 'py312']
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "DTZ", "ICN", "PIE", "PT", "RSE", "RET", "SIM", "ARG"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --strict-markers"
