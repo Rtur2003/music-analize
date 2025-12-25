@@ -15,6 +15,7 @@ from utils.constants import (
     DEFAULT_LUFS_TARGET,
     DEFAULT_N_FFT,
     DEFAULT_N_MFCC,
+    DEFAULT_N_MELS,
     DEFAULT_SAMPLE_RATE,
     DEFAULT_THRESHOLD,
     DEFAULT_TOP_K,
@@ -46,7 +47,7 @@ class FeatureConfig:
     """Feature extraction configuration."""
     n_fft: int = DEFAULT_N_FFT
     hop_length: int = DEFAULT_HOP_LENGTH
-    n_mels: int = 128
+    n_mels: int = DEFAULT_N_MELS
     n_mfcc: int = DEFAULT_N_MFCC
     fmin: int = DEFAULT_FMIN
     fmax: int = DEFAULT_FMAX
