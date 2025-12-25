@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
-from typing import Dict, Iterable, Optional
+from typing import Dict, Optional
 
 import plotly.io as pio
 from jinja2 import Template
+
+logger = logging.getLogger(__name__)
 
 HTML_TEMPLATE = """
 <!doctype html>
@@ -115,27 +118,87 @@ def build_report(
     pdf: bool = False,
     pdf_path: Optional[Path] = None,
 ) -> Path:
-    html_path.parent.mkdir(parents=True, exist_ok=True)
-    fig_html: Dict[str, str] = {name: pio.to_html(fig, include_plotlyjs="cdn", full_html=False) for name, fig in figures.items()}
-    template = Template(HTML_TEMPLATE)
-    rendered = template.render(
-        sample_name=sample_name,
-        top_genre=top_genre,
-        top_genre_conf=top_genre_conf,
-        authenticity_score=authenticity_score,
-        metrics=metrics,
-        figures=fig_html,
-    )
-    html_path.write_text(rendered, encoding="utf-8")
-    if pdf:
-        _render_pdf(rendered, pdf_path or html_path.with_suffix(".pdf"))
-    return html_path
+    """
+    Build an HTML (and optionally PDF) report for audio analysis.
+    
+    Args:
+        sample_name: Name of the audio sample
+        top_genre: Predicted genre label
+        top_genre_conf: Confidence score for top genre
+        authenticity_score: AI authenticity score (0-1)
+        metrics: Dictionary of metrics to display
+        figures: Dictionary of plotly figures
+        html_path: Output path for HTML report
+        pdf: Whether to generate PDF output
+        pdf_path: Optional custom PDF output path
+        
+    Returns:
+        Path to generated HTML report
+        
+    Raises:
+        RuntimeError: If report generation fails
+    """
+    try:
+        html_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        logger.debug(f"Converting {len(figures)} figures to HTML")
+        fig_html: Dict[str, str] = {}
+        for name, fig in figures.items():
+            try:
+                fig_html[name] = pio.to_html(fig, include_plotlyjs="cdn", full_html=False)
+            except Exception as e:
+                logger.error(f"Failed to convert figure '{name}' to HTML: {e}")
+                fig_html[name] = f"<p>Error rendering figure: {e}</p>"
+        
+        template = Template(HTML_TEMPLATE)
+        rendered = template.render(
+            sample_name=sample_name,
+            top_genre=top_genre,
+            top_genre_conf=top_genre_conf,
+            authenticity_score=authenticity_score,
+            metrics=metrics,
+            figures=fig_html,
+        )
+        
+        logger.info(f"Writing HTML report to {html_path}")
+        html_path.write_text(rendered, encoding="utf-8")
+        
+        if pdf:
+            try:
+                _render_pdf(rendered, pdf_path or html_path.with_suffix(".pdf"))
+            except Exception as e:
+                logger.warning(f"Failed to generate PDF: {e}")
+        
+        logger.info("Report generated successfully")
+        return html_path
+        
+    except Exception as e:
+        logger.error(f"Failed to build report: {e}")
+        raise RuntimeError(f"Failed to build report: {e}") from e
 
 
 def _render_pdf(html: str, pdf_path: Path) -> None:
+    """
+    Render HTML to PDF using WeasyPrint.
+    
+    Args:
+        html: HTML content as string
+        pdf_path: Output path for PDF
+        
+    Raises:
+        RuntimeError: If PDF rendering fails
+    """
     try:
-        from weasyprint import HTML  # type: ignore
-    except Exception as exc:  # pragma: no cover - optional dependency
+        from weasyprint import HTML
+    except ImportError as exc:
+        logger.error("weasyprint is not installed")
         raise RuntimeError("weasyprint is required for PDF rendering") from exc
-    pdf_path.parent.mkdir(parents=True, exist_ok=True)
-    HTML(string=html).write_pdf(pdf_path)
+    
+    try:
+        pdf_path.parent.mkdir(parents=True, exist_ok=True)
+        logger.info(f"Rendering PDF to {pdf_path}")
+        HTML(string=html).write_pdf(pdf_path)
+        logger.info("PDF rendered successfully")
+    except Exception as e:
+        logger.error(f"Failed to render PDF: {e}")
+        raise RuntimeError(f"Failed to render PDF: {e}") from e
