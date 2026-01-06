@@ -20,10 +20,23 @@ from utils.constants import (
     DEFAULT_THRESHOLD,
     DEFAULT_TOP_K,
 )
-from utils.exceptions import ConfigurationError
+from utils.exceptions import ConfigurationError, ValidationError
 from utils.validators import validate_positive_number, validate_probability, validate_sample_rate
 
 logger = logging.getLogger(__name__)
+
+
+def _validate_config(validator_func, *args, **kwargs) -> None:
+    """
+    Wrap validator calls to convert ValidationError to ConfigurationError.
+    
+    This maintains semantic clarity: configuration validation failures
+    should raise ConfigurationError, even when using shared validators.
+    """
+    try:
+        validator_func(*args, **kwargs)
+    except ValidationError as e:
+        raise ConfigurationError(str(e)) from e
 
 
 @dataclass
@@ -36,8 +49,8 @@ class AudioConfig:
     
     def __post_init__(self) -> None:
         """Validate configuration after initialization."""
-        validate_sample_rate(self.sample_rate)
-        validate_positive_number(self.target_duration_sec, "target_duration_sec")
+        _validate_config(validate_sample_rate, self.sample_rate)
+        _validate_config(validate_positive_number, self.target_duration_sec, "target_duration_sec")
         if self.normalize_lufs > 0:
             raise ConfigurationError(f"normalize_lufs should be negative, got: {self.normalize_lufs}")
 
@@ -54,10 +67,10 @@ class FeatureConfig:
     
     def __post_init__(self) -> None:
         """Validate configuration after initialization."""
-        validate_positive_number(self.n_fft, "n_fft")
-        validate_positive_number(self.hop_length, "hop_length")
-        validate_positive_number(self.n_mels, "n_mels")
-        validate_positive_number(self.n_mfcc, "n_mfcc")
+        _validate_config(validate_positive_number, self.n_fft, "n_fft")
+        _validate_config(validate_positive_number, self.hop_length, "hop_length")
+        _validate_config(validate_positive_number, self.n_mels, "n_mels")
+        _validate_config(validate_positive_number, self.n_mfcc, "n_mfcc")
         
         if self.fmin >= self.fmax:
             raise ConfigurationError(f"fmin ({self.fmin}) must be less than fmax ({self.fmax})")
@@ -86,7 +99,7 @@ class AuthenticityModelConfig:
     
     def __post_init__(self) -> None:
         """Validate configuration after initialization."""
-        validate_probability(self.threshold, "threshold")
+        _validate_config(validate_probability, self.threshold, "threshold")
         
         valid_models = {"lightgbm", "logreg", "logistic"}
         if self.base_model not in valid_models:

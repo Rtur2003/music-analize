@@ -10,7 +10,9 @@ import numpy as np
 from utils.constants import (
     MAX_AUDIO_DURATION_SEC,
     MAX_FILE_SIZE,
+    MAX_SAMPLE_RATE,
     MIN_AUDIO_DURATION_SEC,
+    MIN_SAMPLE_RATE,
     SUPPORTED_AUDIO_EXTENSIONS,
 )
 from utils.exceptions import ValidationError
@@ -61,11 +63,11 @@ def validate_sample_rate(sample_rate: int) -> None:
     if sample_rate <= 0:
         raise ValidationError(f"Sample rate must be positive, got: {sample_rate}")
     
-    if sample_rate < 8000:
-        raise ValidationError(f"Sample rate too low: {sample_rate}. Minimum is 8000 Hz")
+    if sample_rate < MIN_SAMPLE_RATE:
+        raise ValidationError(f"Sample rate too low: {sample_rate}. Minimum is {MIN_SAMPLE_RATE} Hz")
     
-    if sample_rate > 192000:
-        raise ValidationError(f"Sample rate too high: {sample_rate}. Maximum is 192000 Hz")
+    if sample_rate > MAX_SAMPLE_RATE:
+        raise ValidationError(f"Sample rate too high: {sample_rate}. Maximum is {MAX_SAMPLE_RATE} Hz")
 
 
 def validate_duration(duration: float) -> None:
